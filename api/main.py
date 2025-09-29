@@ -9,24 +9,30 @@ app = FastAPI()
 # Enable CORS for all origins and all methods (handles OPTIONS preflight)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],        
+    allow_origins=["*"],        # allow any origin
     allow_credentials=True,
-    allow_methods=["*"],        
-    allow_headers=["*"],        
+    allow_methods=["*"],        # allow GET, POST, OPTIONS, etc.
+    allow_headers=["*"],        # allow any headers
 )
 
-# Load telemetry JSON from the same folder
+# Load telemetry JSON from the same folder (Vercel deployment safe)
 json_path = os.path.join(os.path.dirname(__file__), "q-vercel-latency.json")
 with open(json_path, "r") as f:
     telemetry = json.load(f)
 
+# GET route for testing deployment
 @app.get("/")
-def root():
+async def root():
     return {"message": "FastAPI telemetry API is live!"}
 
+# POST route for telemetry metrics
 @app.post("/metrics")
 async def get_metrics(request: Request):
-    body = await request.json()
+    try:
+        body = await request.json()
+    except Exception:
+        return {"error": "Invalid JSON"}
+
     regions = body.get("regions", [])
     threshold = body.get("threshold_ms", 180)
 
