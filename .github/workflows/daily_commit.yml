@@ -1,0 +1,25 @@
+name: Daily Commit Update
+
+# Run once per day at 09:00 UTC
+on:
+  schedule:
+    - cron: '0 9 * * *'
+
+jobs:
+  daily-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Git user
+        run: |
+          git config --global user.name "DevSync Bot"
+          git config --global user.email "23f2000416@ds.study.iitm.ac.in"
+
+      - name: Make daily update commit
+        run: |
+          echo "Daily commit on $(date)" >> daily_commit.txt
+          git add daily_commit.txt
+          git commit -m "Daily automated commit $(date)"
+          git push
